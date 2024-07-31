@@ -26,10 +26,6 @@ public class DynamoDbRepository {
 	@Autowired
 	private DynamoDBMapper mapper;
 
-	public void insertStudent(Student student) {
-		mapper.save(student);
-	}
-
 	public List<Student> getStudents(String lastName) {
 		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
 		eav.put(":val1", new AttributeValue().withS(lastName));
@@ -42,6 +38,10 @@ public class DynamoDbRepository {
 
 	public Student getStudent(String studentId) {
 		return mapper.load(Student.class, studentId);
+	}
+
+	public void insertStudent(Student student) {
+		mapper.save(student);
 	}
 
 	public void updateStudent(Student student) {
