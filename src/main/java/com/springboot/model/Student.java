@@ -38,7 +38,7 @@ public class Student implements Serializable {
 		this.firstName = firstName;
 	}
 
-	@DynamoDBRangeKey
+	@DynamoDBAttribute
 	public String getLastName() {
 		return lastName;
 	}

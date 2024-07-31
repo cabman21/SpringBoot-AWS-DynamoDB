@@ -1,5 +1,7 @@
 package com.springboot.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,35 +19,43 @@ import com.springboot.model.Student;
 import com.springboot.repository.DynamoDbRepository;
 
 @RestController
-@RequestMapping("/dynamoDb")
+@RequestMapping("/students")
 public class DynamoDbController {
 
 	@Autowired
 	private DynamoDbRepository repository;
 
-	@PostMapping
-	public String insertIntoDynamoDB(@RequestBody Student student) {
-		repository.insertIntoDynamoDB(student);
-		return "Successfully inserted into DynamoDB table";
+	@GetMapping
+	public ResponseEntity<List<Student>> getStudents(@RequestParam String lastName) {
+		List<Student> students = repository.getStudents(lastName);
+		return new ResponseEntity<List<Student>>(students, HttpStatus.OK);
 	}
 
-	@GetMapping
-	public ResponseEntity<Student> getOneStudentDetails(@RequestParam String studentId, @RequestParam String lastName) {
-		Student student = repository.getOneStudentDetails(studentId, lastName);
+	@GetMapping(value = "/{studentId}")
+	public ResponseEntity<Student> getStudent(@PathVariable("studentId") String studentId) {
+		Student student = repository.getStudent(studentId);
 		return new ResponseEntity<Student>(student, HttpStatus.OK);
 	}
 
-	@PutMapping
-	public void updateStudentDetails(@RequestBody Student student) {
-		repository.updateStudentDetails(student);
+	@PostMapping
+	public ResponseEntity<Object> insertStudent(@RequestBody Student student) {
+		repository.insertStudent(student);
+		return new ResponseEntity<Object>("Successfully inserted into DynamoDB table", HttpStatus.OK);
 	}
 
-	@DeleteMapping(value = "{studentId}/{lastName}")
-	public void deleteStudentDetails(@PathVariable("studentId") String studentId,
-			@PathVariable("lastName") String lastName) {
+	@PutMapping(value = "/{studentId}")
+	public ResponseEntity<Object> updateStudent(@PathVariable("studentId") String studentId,
+			@RequestBody Student student) {
+		student.setStudentId(studentId);
+		repository.updateStudent(student);
+		return new ResponseEntity<Object>("Successfully updated into DynamoDB table", HttpStatus.OK);
+	}
+
+	@DeleteMapping(value = "/{studentId}")
+	public ResponseEntity<Object> deleteStudentDetails(@PathVariable("studentId") String studentId) {
 		Student student = new Student();
 		student.setStudentId(studentId);
-		student.setLastName(lastName);
-		repository.deleteStudentDetails(student);
+		repository.deleteStudent(student);
+		return new ResponseEntity<Object>("Successfully deleted into DynamoDB table", HttpStatus.OK);
 	}
 }

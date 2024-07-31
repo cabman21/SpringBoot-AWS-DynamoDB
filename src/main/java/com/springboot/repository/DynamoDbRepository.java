@@ -1,6 +1,7 @@
 package com.springboot.repository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBSaveExpression;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
@@ -24,15 +26,25 @@ public class DynamoDbRepository {
 	@Autowired
 	private DynamoDBMapper mapper;
 
-	public void insertIntoDynamoDB(Student student) {
+	public void insertStudent(Student student) {
 		mapper.save(student);
 	}
 
-	public Student getOneStudentDetails(String studentId, String lastName) {
-		return mapper.load(Student.class, studentId, lastName);
+	public List<Student> getStudents(String lastName) {
+		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+		eav.put(":val1", new AttributeValue().withS(lastName));
+
+		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression().withFilterExpression("lastName = :val1")
+				.withExpressionAttributeValues(eav);
+
+		return mapper.scan(Student.class, scanExpression);
 	}
 
-	public void updateStudentDetails(Student student) {
+	public Student getStudent(String studentId) {
+		return mapper.load(Student.class, studentId);
+	}
+
+	public void updateStudent(Student student) {
 		try {
 			mapper.save(student, buildDynamoDBSaveExpression(student));
 		} catch (ConditionalCheckFailedException exception) {
@@ -40,7 +52,7 @@ public class DynamoDbRepository {
 		}
 	}
 
-	public void deleteStudentDetails(Student student) {
+	public void deleteStudent(Student student) {
 		mapper.delete(student);
 	}
 
